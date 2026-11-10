@@ -1,0 +1,40 @@
+{
+  "sources": [
+    {
+      "id": "gh-personal",
+      "label": "GitHub (personal)",
+      "type": "github",
+      "host": "github.com",
+      "username": "your-github-username",
+      "enabled": true
+    },
+
+    {
+      "id": "gh-second",
+      "label": "GitHub (second account)",
+      "type": "github",
+      "host": "github.com",
+      "username": "YOUR_OTHER_USERNAME",
+      "tokenEnv": "GH_SECOND_TOKEN",
+      "enabled": false
+    },
+    {
+      "id": "ghe-work",
+      "label": "GitHub Enterprise (work)",
+      "type": "github",
+      "host": "github.your-company.com",
+      "username": "YOUR_ENTERPRISE_USERNAME",
+      "tokenEnv": "GHE_TOKEN",
+      "enabled": false
+    },
+    {
+      "id": "codeberg-main",
+      "label": "Codeberg (main)",
+      "type": "forgejo",
+      "host": "codeberg.org",
+      "username": "YOUR_CODEBERG_USERNAME",
+      "tokenEnv": "CODEBERG_TOKEN",
+      "enabled": false
+    }
+  ]
+}

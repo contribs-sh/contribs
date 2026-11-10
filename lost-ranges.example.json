@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "label": "Contributions on another platform / lost",
+  "ranges": [
+    {
+      "id": "old-job",
+      "label": "Old job",
+      "from": "2018-01-01",
+      "to": "2019-12-31",
+      "days": "weekdays",
+      "weekdays": [1, 2, 3, 4, 5],
+      "note": "Worked on a self-hosted GitLab here — not on GitHub",
+      "color": "#a371f7",
+      "enabled": false
+    }
+  ]
+}

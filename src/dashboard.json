@@ -1,0 +1,14 @@
+{
+  "root": "page",
+  "elements": {
+    "page": {
+      "type": "Dashboard",
+      "props": {},
+      "children": ["legend", "selector", "stats", "heatmaps"]
+    },
+    "legend": { "type": "SourceLegend", "props": {} },
+    "selector": { "type": "YearSelector", "props": {} },
+    "stats": { "type": "StatsPanel", "props": {} },
+    "heatmaps": { "type": "Heatmaps", "props": {} }
+  }
+}

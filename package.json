@@ -1,0 +1,28 @@
+{
+  "name": "contribs-sh",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && vite build",
+    "preview": "vite preview",
+    "fetch": "tsx src/fetch/fetch.ts"
+  },
+  "dependencies": {
+    "@json-render/core": "^0.19.0",
+    "@json-render/react": "^0.19.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
+  }
+}

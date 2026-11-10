@@ -1,0 +1,23 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Personal / local config — never commit (a .example template is committed instead)
+sources.json
+lost-ranges.json
+.env
+.env.*
+!.env.example
+
+# Generated contribution data
+/public/data
+
+# Editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
+# Agent / browser session artifacts
+.playwright-mcp/
+CLAUDE.md

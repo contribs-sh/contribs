@@ -1,0 +1,441 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #39d353;
+
+  /* Contribution intensity ramp (GitHub dark). */
+  --l0: #161b22;
+  --l1: #0e4429;
+  --l2: #006d32;
+  --l3: #26a641;
+  --l4: #39d353;
+
+  /* Days lost to a migration (distinct from the "no data" hatch). */
+  --lost: #484f58;
+
+  --cell: 11px;
+  --gap: 3px;
+  --z-tooltip: 50;
+  --z-sticky: 20;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.state {
+  max-width: 640px;
+  margin: 20vh auto;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.state--error {
+  color: #f85149;
+}
+.state code {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: var(--text);
+}
+
+/* ---- Page shell ---- */
+.dashboard {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+.dashboard__head {
+  margin-bottom: 24px;
+}
+.dashboard__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+.dashboard__sub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ---- Legend ---- */
+.legend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.legend__sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.legend--sticky {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  padding: 12px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.legend__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.legend__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.legend__dot--github {
+  background: var(--accent);
+}
+.legend__dot--forgejo {
+  background: #2185d0;
+}
+.legend__scale {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+.legend__nodata,
+.legend__ramp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend__ramp {
+  margin-left: auto;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .legend__ramp {
+    margin-left: 0;
+  }
+}
+.legend__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--muted);
+}
+.legend__toggle input {
+  accent-color: var(--muted);
+  cursor: pointer;
+  margin: 0;
+}
+.legend__service {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  padding: 6px 0;
+  background: transparent;
+  color: var(--service-color);
+  font: inherit;
+  cursor: pointer;
+}
+.legend__service[data-enabled="false"] { color: var(--muted); }
+.legend__service input {
+  margin: 0;
+  accent-color: var(--service-color);
+  cursor: pointer;
+}
+.legend__service input:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+
+/* ---- Year tabs ---- */
+.years {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.years__label {
+  color: var(--muted);
+  font-size: 13px;
+}
+.years__select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.years__select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 32px 7px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+.years__select:hover {
+  border-color: var(--muted);
+}
+.years__select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.years__chevron {
+  position: absolute;
+  right: 11px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* ---- Stats ---- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.stat__value {
+  font-size: 24px;
+  font-weight: 600;
+}
+.stat__label {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.stat__hint {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+/* ---- Heatmaps ---- */
+.heatmaps {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.heatmaps__earlier {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: earlier-in 320ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes earlier-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Quiet "show more" control to reveal years beyond the recent window. */
+.show-earlier {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, transform 120ms ease-out;
+}
+.show-earlier:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+.show-earlier:active {
+  transform: scale(0.97);
+}
+.show-earlier__chevron {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heatmaps__earlier {
+    animation: none;
+  }
+}
+.heatmap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  overflow-x: auto;
+}
+.heatmap__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.heatmap__year {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.heatmap__total {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.heatmap__grid-wrap {
+  display: flex;
+  gap: 6px;
+  width: max-content;
+}
+.heatmap__weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, var(--cell));
+  gap: var(--gap);
+  margin-top: 18px;
+  font-size: 9px;
+  color: var(--muted);
+}
+.heatmap__weekdays span {
+  line-height: var(--cell);
+}
+.heatmap__weekdays span:nth-child(1) { grid-row: 2; }
+.heatmap__weekdays span:nth-child(2) { grid-row: 4; }
+.heatmap__weekdays span:nth-child(3) { grid-row: 6; }
+
+.heatmap__months {
+  display: grid;
+  grid-template-columns: repeat(53, var(--cell));
+  column-gap: var(--gap);
+  height: 14px;
+  font-size: 9px;
+  color: var(--muted);
+}
+.heatmap__months span {
+  white-space: nowrap;
+}
+.heatmap__grid {
+  display: flex;
+  gap: var(--gap);
+}
+.heatmap__week {
+  display: grid;
+  grid-template-rows: repeat(7, var(--cell));
+  gap: var(--gap);
+}
+
+/* ---- Cells ---- */
+.cell {
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: 2px;
+  display: inline-block;
+}
+.heatmap__day {
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.heatmap__day:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.heatmap__day:disabled { cursor: default; }
+.day-tooltip {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  width: 280px;
+  max-width: calc(100vw - 24px);
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 4px 16px #0d111780;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+.day-tooltip--below { transform: none; }
+.day-tooltip__summary { margin-top: 4px; }
+.day-tooltip__note { color: var(--muted); margin-top: 4px; }
+.day-tooltip__source {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+.day-tooltip__source:first-of-type { border-top: 1px solid var(--border); }
+.cell--l0 { background: var(--l0); outline: 1px solid rgba(255, 255, 255, 0.04); outline-offset: -1px; }
+.cell--l1 { background: var(--l1); }
+.cell--l2 { background: var(--l2); }
+.cell--l3 { background: var(--l3); }
+.cell--l4 { background: var(--l4); }
+.cell--pad { opacity: 0.45; }
+.cell--future {
+  background: var(--bg);
+  outline: 1px solid var(--border);
+  outline-offset: -1px;
+  opacity: 0.35;
+}
+
+/* Lost to migration — solid muted gray, distinct from the "no data" hatch.
+   Applied only to 0-contribution days in a configured range; green days are untouched. */
+.cell--lost {
+  background: var(--lost);
+}
+.cell--lost:hover {
+  outline: 1px solid var(--text);
+  outline-offset: -1px;
+  filter: brightness(1.25);
+}
+
+/* "No data" — distinct muted diagonal hatch, never confused with a zero day. */
+.cell--nodata {
+  background-color: #1c2128;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0,
+    transparent 1.5px,
+    rgba(139, 148, 158, 0.35) 1.5px,
+    rgba(139, 148, 158, 0.35) 3px
+  );
+}
