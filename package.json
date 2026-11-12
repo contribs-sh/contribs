@@ -58,9 +58,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/contribs-sh/contribs.sh.git"
+    "url": "git+https://github.com/contribs-sh/contribs.git"
   },
   "bugs": {
-    "url": "https://github.com/contribs-sh/contribs.sh/issues"
+    "url": "https://github.com/contribs-sh/contribs/issues"
   }
 }
