@@ -1,5 +1,29 @@
 # contribs.sh
 
+**Every contribution, every forge, one heatmap.** Your GitHub graph only shows one account on one
+platform. contribs.sh merges every account you've used, counts commits from repos still on your disk,
+and exports the result as a banner for X, LinkedIn and more.
+
+![Example X banner rendered by contribs.sh](assets/hero-x.png)
+
+```bash
+npx contribs.sh init      # sources.json for your gh login
+npx contribs.sh banner    # → contribs-x.png
+```
+
+| GitHub shows | contribs.sh shows |
+| --- | --- |
+| ![One account only](assets/before.png) | ![Personal and work accounts merged](assets/after.png) |
+
+Years that live on another platform can be recovered from local repos (`contribs.sh scan`) or marked
+as lost history, and show up on the all-years poster:
+
+<p align="center"><img src="assets/poster.png" width="420" alt="All-years poster with recovered and lost history"></p>
+
+<sub>Images are generated from synthetic data by `npm run demo`.</sub>
+
+## The dashboard
+
 A browser dashboard for your contribution history, merged across **multiple sources** —
 github.com accounts, GitHub Enterprise, and Forgejo/Gitea instances (e.g. Codeberg) — rendered
 with [`@json-render/react`](https://json-render.dev). It distinguishes genuine zero-activity days

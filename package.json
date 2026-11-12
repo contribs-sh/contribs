@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "fetch": "tsx src/fetch/fetch.ts",
     "cli": "tsx src/cli/index.ts",
-    "banner": "tsx src/cli/index.ts banner"
+    "banner": "tsx src/cli/index.ts banner",
+    "demo": "tsx scripts/demo.ts"
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
