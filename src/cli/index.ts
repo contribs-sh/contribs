@@ -9,13 +9,13 @@ import { findRepos, localAdapter } from '../fetch/adapters/local';
 import { runFetch } from '../fetch/run';
 import { workflowYaml } from './workflow';
 
-const HELP = `contribs-sh — every contribution, every forge, one heatmap.
+const HELP = `contribs.sh — every contribution, every forge, one heatmap.
 
 Usage:
-  contribs-sh init [--ci]            create sources.json (and a GitHub Actions workflow with --ci)
-  contribs-sh fetch [--out DIR]      fetch + merge all sources (default DIR: public/data)
-  contribs-sh banner [options]       render an image from the merged data
-  contribs-sh scan DIR... [options]  recover history from local git repos on disk
+  contribs.sh init [--ci]            create sources.json (and a GitHub Actions workflow with --ci)
+  contribs.sh fetch [--out DIR]      fetch + merge all sources (default DIR: public/data)
+  contribs.sh banner [options]       render an image from the merged data
+  contribs.sh scan DIR... [options]  recover history from local git repos on disk
 
 banner options:
   --preset ID      ${PRESET_IDS.join(' | ')} | all   (default: x)
@@ -102,7 +102,7 @@ async function init(args: string[]) {
       console.log('and a CONTRIBS_SOURCES secret holding your sources.json, then enable GitHub Pages → "GitHub Actions".');
     }
   }
-  console.log('Next: contribs-sh fetch && contribs-sh banner');
+  console.log('Next: contribs.sh fetch && contribs.sh banner');
 }
 
 async function fetchCmd(args: string[]) {
@@ -191,7 +191,7 @@ async function scan(args: string[]) {
       to: { type: 'string' },
     },
   });
-  if (positionals.length === 0) fail('Usage: contribs-sh scan DIR... [--email ADDR]');
+  if (positionals.length === 0) fail('Usage: contribs.sh scan DIR... [--email ADDR]');
   const emails = values.email?.length ? values.email : [gitEmail()].filter((e): e is string => !!e);
   if (emails.length === 0) fail('No author email: pass --email or set git config user.email');
   const depth = Number(values.depth);

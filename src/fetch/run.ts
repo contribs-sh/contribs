@@ -22,7 +22,7 @@ const adapters: Record<SourceType, Adapter> = {
 export async function runFetch(root: string, outDir = resolve(root, 'public/data')): Promise<MergedData> {
   const sources = loadSources(root);
   if (sources.length === 0) {
-    throw new Error('No usable sources. Copy sources.example.json → sources.json (or run `contribs-sh init`) and enable at least one.');
+    throw new Error('No usable sources. Copy sources.example.json → sources.json (or run `contribs.sh init`) and enable at least one.');
   }
 
   mkdirSync(resolve(outDir, 'sources'), { recursive: true });

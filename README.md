@@ -188,13 +188,13 @@ Options: `--range rolling|all|YEAR`, `--theme dark|light`, `--title`, `--scale`,
 
 ## CLI
 
-`bin/contribs-sh.mjs` (also `npm run cli --`) wraps the whole pipeline:
+Install with `npx contribs.sh <command>` (or `npm i -g contribs.sh`; the binary is `contribs.sh`, with `contribs-sh` as an alias). Inside a clone, `npm run cli --` runs the same thing:
 
 ```bash
-contribs-sh init [--ci]      # sources.json for your gh login; --ci adds the Pages workflow
-contribs-sh fetch            # same as npm run fetch
-contribs-sh banner [...]     # see above
-contribs-sh scan DIR...      # see "Recovering history from local repos"
+contribs.sh init [--ci]      # sources.json for your gh login; --ci adds the Pages workflow
+contribs.sh fetch            # same as npm run fetch
+contribs.sh banner [...]     # see above
+contribs.sh scan DIR...      # see "Recovering history from local repos"
 ```
 
 ## Self-hosting with GitHub Actions

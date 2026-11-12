@@ -1,6 +1,5 @@
 {
-  "name": "contribs-sh",
-  "private": true,
+  "name": "contribs.sh",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -12,23 +11,48 @@
     "banner": "tsx src/cli/index.ts banner"
   },
   "dependencies": {
-    "@json-render/core": "^0.19.0",
-    "@json-render/react": "^0.19.0",
     "@resvg/resvg-js": "^2.6.2",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "tsx": "^4.19.2",
-    "zod": "^4.4.3"
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
+    "@json-render/core": "^0.19.0",
+    "@json-render/react": "^0.19.0",
     "@types/node": "^22.10.1",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "typescript": "^5.6.3",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "zod": "^4.4.3"
   },
   "bin": {
+    "contribs.sh": "bin/contribs-sh.mjs",
     "contribs-sh": "bin/contribs-sh.mjs"
-  }
+  },
+  "description": "Every contribution, every forge, one heatmap — merge GitHub, GitHub Enterprise, Forgejo and local git history, export banners for X, LinkedIn and more.",
+  "license": "MIT",
+  "homepage": "https://contribs.sh",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin",
+    "src/cli",
+    "src/render",
+    "src/data",
+    "src/fetch",
+    "src/config.ts",
+    "config.json"
+  ],
+  "keywords": [
+    "github",
+    "contributions",
+    "heatmap",
+    "banner",
+    "cli",
+    "forgejo",
+    "gitea"
+  ]
 }
