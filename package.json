@@ -54,5 +54,12 @@
     "cli",
     "forgejo",
     "gitea"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/contribs-sh/contribs.sh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/contribs-sh/contribs.sh/issues"
+  }
 }
