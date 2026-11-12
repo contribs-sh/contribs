@@ -4,11 +4,12 @@
     "page": {
       "type": "Dashboard",
       "props": {},
-      "children": ["legend", "selector", "stats", "heatmaps"]
+      "children": ["legend", "selector", "stats", "export", "heatmaps"]
     },
     "legend": { "type": "SourceLegend", "props": {} },
     "selector": { "type": "YearSelector", "props": {} },
     "stats": { "type": "StatsPanel", "props": {} },
+    "export": { "type": "ExportPanel", "props": {} },
     "heatmaps": { "type": "Heatmaps", "props": {} }
   }
 }

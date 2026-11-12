@@ -21,3 +21,8 @@ lost-ranges.json
 # Agent / browser session artifacts
 .playwright-mcp/
 CLAUDE.md
+
+# Rendered banners (contribs-sh banner)
+/banners
+contribs-*.png
+contribs-*.svg

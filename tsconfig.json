@@ -20,5 +20,5 @@
     "resolveJsonModule": true
   },
   "include": ["src"],
-  "exclude": ["src/fetch"]
+  "exclude": ["src/fetch", "src/cli"]
 }

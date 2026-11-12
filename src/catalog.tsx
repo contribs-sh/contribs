@@ -8,6 +8,7 @@ import { SourceLegend } from './components/SourceLegend';
 import { YearSelector } from './components/YearSelector';
 import { StatsPanel } from './components/StatsPanel';
 import { Heatmaps } from './components/Heatmaps';
+import { ExportPanel } from './components/ExportPanel';
 
 /**
  * The catalog declares the components the JSON document (dashboard.json) may use.
@@ -36,6 +37,10 @@ export const catalog = defineCatalog(schema, {
       props: z.object({}),
       description: 'Contribution heatmap grid(s) for the selected scope',
     },
+    ExportPanel: {
+      props: z.object({}),
+      description: 'Export the heatmap as a banner, card, Wrapped story, or poster image',
+    },
   },
   actions: {},
 });
@@ -47,6 +52,7 @@ export const { registry } = defineRegistry(catalog, {
     YearSelector: () => <YearSelector />,
     StatsPanel: () => <StatsPanel />,
     Heatmaps: () => <Heatmaps />,
+    ExportPanel: () => <ExportPanel />,
   },
   actions: {},
 });

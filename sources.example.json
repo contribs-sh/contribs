@@ -35,6 +35,16 @@
       "username": "YOUR_CODEBERG_USERNAME",
       "tokenEnv": "CODEBERG_TOKEN",
       "enabled": false
+    },
+    {
+      "id": "local-history",
+      "label": "Recovered (local git)",
+      "type": "local",
+      "paths": ["~/code/old-work"],
+      "emails": ["you@old-employer.example"],
+      "from": "2015-01-01",
+      "to": "2019-12-31",
+      "enabled": false
     }
   ]
 }

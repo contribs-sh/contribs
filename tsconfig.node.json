@@ -18,5 +18,5 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "src/fetch", "src/data"]
+  "include": ["vite.config.ts", "src/fetch", "src/data", "src/render", "src/cli"]
 }

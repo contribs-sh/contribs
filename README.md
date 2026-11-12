@@ -143,6 +143,73 @@ activity. Selections persist in the browser; No Data and Less–More are informa
 | `npm run dev`   | Vite dev server                                 |
 | `npm run build` | type-check (app + node) and production build    |
 | `npm run preview` | preview the production build                   |
+| `npm run banner -- ...` | render banner / card / Wrapped / poster images |
+| `npm run cli -- ...` | the `contribs-sh` CLI (`init`, `fetch`, `banner`, `scan`) |
+
+## Recovering history from local repos
+
+Commits that never reached a hosted forge (an old employer's GitLab, an SVN repo you converted with
+`git svn`, a Bitbucket repo you still have cloned) can be counted straight from disk:
+
+```bash
+npm run cli -- scan ~/code/old-work --email you@old-employer.example
+```
+
+`scan` lists commits per year and prints a `"type": "local"` source to paste into `sources.json`.
+Commits are de-duplicated by hash across repos. Anything you also pushed to GitHub is already in your
+GitHub graph, so set `from`/`to` to the period GitHub is missing. Recovered days are real data, so
+they replace the hand-drawn `lost-ranges.json` annotation for that period.
+
+## Exporting images
+
+The dashboard has an **Export image** panel. It renders the same SVG the CLI uses and downloads it
+as PNG or SVG:
+
+| preset     | size         | layout                                         |
+| ---------- | ------------ | ---------------------------------------------- |
+| `x`        | 1500×500     | banner; content kept right of the profile photo |
+| `linkedin` | 1584×396     | banner                                         |
+| `og`       | 1200×630     | card                                           |
+| `github`   | 1280×640     | card (repo social preview)                     |
+| `wrapped`  | 1080×1350    | year-in-review story with stats                |
+| `poster`   | 5400×7200    | every year, 18×24 in at 300 dpi                |
+
+From the command line (renders with `resvg`, no browser):
+
+```bash
+npm run banner -- --preset x                         # contribs-x.png
+npm run banner -- --preset wrapped --range 2026 --title "2026 in code"
+npm run banner -- --preset poster --theme light --out poster.png
+npm run banner -- --preset all --out banners/        # every preset, PNG + SVG
+```
+
+Options: `--range rolling|all|YEAR`, `--theme dark|light`, `--title`, `--scale`, `--no-stats`,
+`--no-mark`, `--transparent`. Lost ranges from `lost-ranges.json` are drawn in their colors.
+
+## CLI
+
+`bin/contribs-sh.mjs` (also `npm run cli --`) wraps the whole pipeline:
+
+```bash
+contribs-sh init [--ci]      # sources.json for your gh login; --ci adds the Pages workflow
+contribs-sh fetch            # same as npm run fetch
+contribs-sh banner [...]     # see above
+contribs-sh scan DIR...      # see "Recovering history from local repos"
+```
+
+## Self-hosting with GitHub Actions
+
+`.github/workflows/contribs.yml` refreshes the data daily, builds the dashboard, renders every banner
+preset, and publishes to GitHub Pages. It does nothing until configured, so forks are safe:
+
+1. Repo → Settings → Secrets → Actions: add `CONTRIBS_SOURCES` (your `sources.json`, with a
+   `tokenEnv` on every source), one secret per `tokenEnv` (e.g. `GH_MAIN_TOKEN`, a classic PAT with
+   `read:user`, `repo`, `read:org`), and optionally `CONTRIBS_LOST_RANGES`.
+2. Settings → Pages → Source: **GitHub Actions**.
+3. Run the workflow once from the Actions tab.
+
+Your banners are then at `https://<you>.github.io/<repo>/banners/x.png` (and `.svg`), ready to embed in
+a README or site. Add extra token secrets to the `env:` block of the "Fetch, build, render banners" step.
 
 ## Deploying
 

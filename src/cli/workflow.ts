@@ -1,0 +1,85 @@
+/** GitHub Actions workflow: daily fetch → build → banners → GitHub Pages. */
+export function workflowYaml(): string {
+  return `# contribs.sh — refresh your heatmap daily and publish it (plus banner images) to GitHub Pages.
+#
+# Setup (repo → Settings):
+#   1. Secrets and variables → Actions → New repository secret:
+#        CONTRIBS_SOURCES      contents of your sources.json (every source needs "tokenEnv")
+#        GH_MAIN_TOKEN         classic PAT with read:user, repo, read:org (one secret per tokenEnv)
+#        CONTRIBS_LOST_RANGES  optional: contents of your lost-ranges.json
+#   2. Pages → Build and deployment → Source: GitHub Actions
+#
+# Published files: index.html (dashboard), banners/<preset>.png|svg, data/contributions.json
+name: contribs
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      configured: \${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        env:
+          CONTRIBS_SOURCES: \${{ secrets.CONTRIBS_SOURCES }}
+        run: |
+          if [ -n "$CONTRIBS_SOURCES" ]; then echo configured=true >> "$GITHUB_OUTPUT"; else
+            echo "::notice::CONTRIBS_SOURCES secret not set — skipping. See the setup notes at the top of this workflow."
+            echo configured=false >> "$GITHUB_OUTPUT"; fi
+      - if: steps.check.outputs.configured == 'true'
+        uses: actions/checkout@v4
+      - if: steps.check.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.check.outputs.configured == 'true'
+        name: Write config from secrets
+        env:
+          CONTRIBS_SOURCES: \${{ secrets.CONTRIBS_SOURCES }}
+          CONTRIBS_LOST_RANGES: \${{ secrets.CONTRIBS_LOST_RANGES }}
+        run: |
+          printf '%s' "$CONTRIBS_SOURCES" > sources.json
+          if [ -n "$CONTRIBS_LOST_RANGES" ]; then printf '%s' "$CONTRIBS_LOST_RANGES" > lost-ranges.json; fi
+      - if: steps.check.outputs.configured == 'true'
+        name: Fetch, build, render banners
+        env:
+          GH_MAIN_TOKEN: \${{ secrets.GH_MAIN_TOKEN }}
+          # Add one line per extra "tokenEnv" in your sources.json, e.g.:
+          # GHE_TOKEN: \${{ secrets.GHE_TOKEN }}
+          # CODEBERG_TOKEN: \${{ secrets.CODEBERG_TOKEN }}
+        run: |
+          npm ci
+          npm run fetch
+          npm run build -- --base ./
+          npm run banner -- --preset all --out dist/banners
+      - if: steps.check.outputs.configured == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.configured == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: \${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+`;
+}
