@@ -34,7 +34,7 @@ export interface YearCalendar {
 export interface SourceMeta {
   id: string;
   label: string;
-  type: 'github' | 'forgejo' | 'local';
+  type: 'github' | 'gitlab' | 'bitbucket' | 'azure' | 'forgejo' | 'gitea' | 'local' | 'json';
   /** Inclusive ISO date range the source provided data for. */
   coverage: { from: string; to: string };
 }

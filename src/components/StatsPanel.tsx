@@ -28,11 +28,9 @@ export function StatsPanel() {
       <Stat label="Active days" value={stats.activeDays.toLocaleString()} hint={lostHint} />
       <Stat
         label="Busiest day"
-        value={stats.busiest ? String(stats.busiest.count) : '—'}
+        value={stats.busiest ? String(stats.busiest.count) : '0'}
         hint={stats.busiest?.date}
       />
-      <Stat label="Longest streak" value={`${stats.longestStreak} d`} hint="real activity only" />
-      <Stat label="Current streak" value={`${stats.currentStreak} d`} hint="real activity only" />
       <Stat label="Avg / active day" value={stats.avgPerActiveDay.toFixed(1)} hint={lostHint} />
     </div>
   );

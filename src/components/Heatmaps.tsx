@@ -4,7 +4,7 @@ import { recentYears as RECENT_YEARS } from '../config';
 import { YearHeatmap } from './YearHeatmap';
 
 /**
- * Renders the selected year's heatmap, or — for the all-years overview — the most
+ * Renders the selected year's heatmap, or (for the all-years overview) the most
  * recent `recentYears` years, with the rest tucked behind a fade-in toggle.
  */
 export function Heatmaps() {

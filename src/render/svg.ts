@@ -144,16 +144,13 @@ function weeksFor(range: 'rolling' | number, today: string): Array<Array<string 
 interface RangeStats {
   total: number;
   activeDays: number;
-  longestStreak: number;
   busiest: { date: string; count: number } | null;
 }
 
-/** Same semantics as the dashboard: lost days count 1 each but never extend streaks. */
+/** Same semantics as the dashboard: lost days count 1 each toward total and active days. */
 function rangeStats(dates: string[], days: Map<string, DayInfo>, today: string, lostFor?: RenderOptions['lostFor']): RangeStats {
   let total = 0;
   let activeDays = 0;
-  let longest = 0;
-  let run = 0;
   let busiest: RangeStats['busiest'] = null;
   for (const date of [...dates].sort()) {
     if (date > today) continue;
@@ -161,18 +158,15 @@ function rangeStats(dates: string[], days: Map<string, DayInfo>, today: string, 
     if (info?.known && info.count > 0) {
       total += info.count;
       activeDays++;
-      run++;
-      longest = Math.max(longest, run);
       if (!busiest || info.count > busiest.count) busiest = { date, count: info.count };
       continue;
     }
-    run = 0;
     if (lostFor?.(date)) {
       total++;
       activeDays++;
     }
   }
-  return { total, activeDays, longestStreak: longest, busiest };
+  return { total, activeDays, busiest };
 }
 
 interface GridCtx {
@@ -223,7 +217,9 @@ function rangeLabel(range: 'rolling' | number): string {
 }
 
 function statLine(s: RangeStats): string {
-  return `${fmt(s.activeDays)} active days · longest streak ${fmt(s.longestStreak)} days`;
+  return s.busiest
+    ? `${fmt(s.activeDays)} active days · busiest day ${fmt(s.busiest.count)} on ${s.busiest.date}`
+    : `${fmt(s.activeDays)} active days`;
 }
 
 /** Render a contribution heatmap image as a standalone SVG string. */
@@ -301,7 +297,7 @@ export function renderSvg(data: MergedData, options: RenderOptions): string {
       y += H * 0.08;
       const tiles: Array<[string, string]> = [
         [fmt(stats.activeDays), 'active days'],
-        [fmt(stats.longestStreak), 'day longest streak'],
+        [stats.activeDays ? (stats.total / stats.activeDays).toFixed(1) : '0', 'per active day'],
         [stats.busiest ? fmt(stats.busiest.count) : '0', stats.busiest ? `on ${stats.busiest.date}, busiest day` : 'busiest day'],
       ];
       const labelX = pad + H * 0.05 * 0.62 * Math.max(...tiles.map(([value]) => value.length)) + H * 0.025;
@@ -361,7 +357,7 @@ function poster(data: MergedData, range: Range, ctx: GridCtx, W: number, H: numb
   parts.push(text(pad, pad + head * 0.45, head * 0.38, ctx.theme.text, title ?? 'Contribution history', { weight: 700 }));
   if (showStats) {
     const span = years.length > 1 ? `${years[0]}–${years[years.length - 1]}` : String(years[0]);
-    parts.push(text(pad, pad + head * 0.8, head * 0.16, ctx.theme.muted, `${fmt(stats.total)} contributions · ${span} · longest streak ${fmt(stats.longestStreak)} days`));
+    parts.push(text(pad, pad + head * 0.8, head * 0.16, ctx.theme.muted, `${fmt(stats.total)} contributions · ${span} · ${fmt(stats.activeDays)} active days`));
   }
   years.forEach((year, i) => {
     const col = i % cols;

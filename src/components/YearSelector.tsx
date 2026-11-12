@@ -7,7 +7,7 @@ export function YearSelector() {
   const { data, scope, setScope, showLost, lostFor } = useContributions();
   const years = [...data.years].sort((a, b) => b.year - a.year);
 
-  // Per-year totals — including lost/incomplete days when that overlay is enabled,
+  // Per-year totals, including lost/incomplete days when that overlay is enabled,
   // so the dropdown matches the stat cards.
   const totals = useMemo(() => {
     const isLost = showLost ? (d: string) => lostFor(d) !== null : undefined;

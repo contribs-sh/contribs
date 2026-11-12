@@ -8,6 +8,7 @@ import { PRESETS, PRESET_IDS, renderSvg, type PresetId, type Range, type ThemeId
 import { findRepos, localAdapter } from '../fetch/adapters/local';
 import { runFetch } from '../fetch/run';
 import { workflowYaml } from './workflow';
+import { collectShipped, defaultWindow, reviewMarkdown } from './review';
 
 const HELP = `contribs.sh — every contribution, every forge, one heatmap.
 
@@ -16,6 +17,8 @@ Usage:
   contribs.sh fetch [--out DIR]      fetch + merge all sources (default DIR: public/data)
   contribs.sh banner [options]       render an image from the merged data
   contribs.sh scan DIR... [options]  recover history from local git repos on disk
+  contribs.sh review [options]       Markdown work summary for a review / brag doc
+  contribs.sh wrapped [YEAR]         year-in-review card (shortcut for banner --preset wrapped)
 
 banner options:
   --preset ID      ${PRESET_IDS.join(' | ')} | all   (default: x)
@@ -28,6 +31,12 @@ banner options:
   --no-stats       hide totals and stats text
   --no-mark        hide the contribs.sh mark
   --transparent    no background fill
+
+review options:
+  --from DATE      start of the window (default: 6 months ago)
+  --to DATE        end of the window (default: today)
+  --no-prs         counts only; skip pulling merged PR/MR titles
+  --out PATH       write to a file instead of stdout
 
 scan options:
   --email ADDR     author email to count (repeatable; default: git config user.email)
@@ -145,10 +154,7 @@ async function banner(args: string[]) {
   const scale = Number(values.scale);
   if (!(scale > 0 && scale <= 4)) fail('--scale must be between 0 and 4');
 
-  const dataPath = resolve(root, values.data ?? 'public/data/contributions.json');
-  const data: MergedData = existsSync(dataPath)
-    ? readJson<MergedData>(dataPath)
-    : values.data ? fail(`No data at ${dataPath}`) : await runFetch(root, dirname(dataPath));
+  const data = await loadData(values.data);
 
   const lostFor = compileLost(loadLost());
   for (const preset of presets) {
@@ -225,7 +231,45 @@ async function scan(args: string[]) {
   }, null, 2));
 }
 
-const commands: Record<string, (args: string[]) => Promise<void>> = { init, fetch: fetchCmd, banner, scan };
+async function loadData(path?: string): Promise<MergedData> {
+  const dataPath = resolve(root, path ?? 'public/data/contributions.json');
+  if (existsSync(dataPath)) return readJson<MergedData>(dataPath);
+  if (path) fail(`No data at ${dataPath}`);
+  return runFetch(root, dirname(dataPath));
+}
+
+async function review(args: string[]) {
+  const { values } = parseArgs({
+    args,
+    options: {
+      from: { type: 'string' },
+      to: { type: 'string' },
+      data: { type: 'string' },
+      out: { type: 'string' },
+      'no-prs': { type: 'boolean' },
+    },
+  });
+  const def = defaultWindow();
+  const from = values.from ?? def.from;
+  const to = values.to ?? def.to;
+  for (const d of [from, to]) if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) fail('--from/--to must be YYYY-MM-DD');
+  const data = await loadData(values.data);
+  const shipped = values['no-prs'] ? null : await collectShipped(root, from, to);
+  const md = reviewMarkdown(data, from, to, shipped);
+  if (values.out) {
+    writeFileSync(resolve(root, values.out), `${md}\n`);
+    console.error(`Wrote ${resolve(root, values.out)}`);
+  } else {
+    process.stdout.write(`${md}\n`);
+  }
+}
+
+async function wrapped(args: string[]) {
+  const year = args[0] && /^\d{4}$/.test(args[0]) ? args.shift()! : String(new Date().getUTCFullYear());
+  await banner(['--preset', 'wrapped', '--range', year, '--out', `contribs-wrapped-${year}.png`, ...args]);
+}
+
+const commands: Record<string, (args: string[]) => Promise<void>> = { init, fetch: fetchCmd, banner, scan, review, wrapped };
 
 const [command, ...rest] = process.argv.slice(2);
 if (!command || command === '-h' || command === '--help' || command === 'help') {

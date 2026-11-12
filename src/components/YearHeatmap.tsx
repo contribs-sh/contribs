@@ -1,7 +1,7 @@
 import type { Day, YearCalendar } from '../data/types';
 import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { type LostHit } from '../lostRanges';
+import type { LostHit } from '../data/lost';
 import { computeStats } from '../data/stats';
 import { useContributions } from '../contributionsContext';
 

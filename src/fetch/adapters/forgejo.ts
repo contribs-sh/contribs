@@ -1,4 +1,5 @@
 import type { Adapter, ResolvedSource } from './types';
+import { userAgent } from './http';
 
 /**
  * Forgejo / Gitea adapter (e.g. Codeberg).
@@ -10,9 +11,9 @@ export const forgejoAdapter: Adapter = async (source: ResolvedSource) => {
   const url = `https://${source.host}/api/v1/users/${encodeURIComponent(source.username)}/heatmap`;
   const res = await fetch(url, {
     headers: {
-      Authorization: `token ${source.token}`,
+      ...(source.token ? { Authorization: `token ${source.token}` } : {}),
       Accept: 'application/json',
-      'User-Agent': 'contribs-sh',
+      ...userAgent(),
     },
   });
   if (!res.ok) {

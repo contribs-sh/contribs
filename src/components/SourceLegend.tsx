@@ -1,12 +1,12 @@
 import { useContributions } from '../contributionsContext';
-import { lostLegend } from '../lostRanges';
 
 /** Lists the merged sources and the intensity scale, including the distinct "no data" swatch. */
 export function SourceLegend() {
-  const { data, showLost, setShowLost, enabledServices, toggleService } = useContributions();
-  // GitHub first, then each lost range in the order it appears in lost-ranges.json.
+  const { data, showLost, setShowLost, enabledServices, toggleService, lostLegend } = useContributions();
+  // GitHub first (when a GitHub source exists), then each lost range in config order.
+  const hasGitHub = data.sources.some((s) => s.type === 'github') || lostLegend.some((item) => item.label === 'GitHub');
   const services = [
-    { label: 'GitHub', color: lostLegend.find((item) => item.label === 'GitHub')?.color ?? '#39d353' },
+    ...(hasGitHub ? [{ label: 'GitHub', color: lostLegend.find((item) => item.label === 'GitHub')?.color ?? '#39d353' }] : []),
     ...lostLegend.filter((item) => item.label !== 'GitHub'),
   ];
 

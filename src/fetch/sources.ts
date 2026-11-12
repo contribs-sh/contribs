@@ -12,7 +12,9 @@ interface SourceConfig {
   /** Env var holding the token. Omit for github.com accounts read via the gh CLI. */
   tokenEnv?: string;
   enabled?: boolean;
-  /** local only: directories to scan, author emails, scan depth, and date window. */
+  /** json only: data URL or file path. */
+  url?: string;
+  /** local: directories to scan and scan depth. local/azure/bitbucket: author emails. Any: date window. */
   paths?: string[];
   emails?: string[];
   depth?: number;
@@ -35,6 +37,16 @@ export function loadSources(root: string): ResolvedSource[] {
   for (const cfg of sources) {
     if (cfg.enabled === false) continue;
 
+    const window = { emails: cfg.emails, from: cfg.from, to: cfg.to };
+
+    if (cfg.type === 'json') {
+      resolved.push({
+        id: cfg.id, label: cfg.label, type: 'json', host: '', username: '',
+        token: cfg.tokenEnv ? process.env[cfg.tokenEnv]?.trim() ?? '' : '', url: cfg.url, ...window,
+      });
+      continue;
+    }
+
     if (cfg.type === 'local') {
       resolved.push({
         id: cfg.id,
@@ -52,11 +64,12 @@ export function loadSources(root: string): ResolvedSource[] {
       continue;
     }
 
-    if (!cfg.host || !cfg.username) {
+    const host = cfg.host ?? DEFAULT_HOSTS[cfg.type];
+    if (!host || (!cfg.username && cfg.type !== 'azure')) {
       console.warn(`⚠︎  Skipping "${cfg.id}" — "host" and "username" are required.`);
       continue;
     }
-    const token = resolveToken(cfg);
+    const token = resolveToken({ ...cfg, host });
     if (!token) {
       console.warn(`⚠︎  Skipping "${cfg.id}" — no token (${tokenHint(cfg)}).`);
       continue;
@@ -66,13 +79,21 @@ export function loadSources(root: string): ResolvedSource[] {
       id: cfg.id,
       label: cfg.label,
       type: cfg.type,
-      host: cfg.host,
-      username: cfg.username,
+      host,
+      username: cfg.username ?? '',
       token,
+      ...window,
     });
   }
   return resolved;
 }
+
+const DEFAULT_HOSTS: Partial<Record<SourceType, string>> = {
+  github: 'github.com',
+  gitlab: 'gitlab.com',
+  bitbucket: 'bitbucket.org',
+  forgejo: 'codeberg.org',
+};
 
 function resolveToken(cfg: SourceConfig): string | null {
   if (cfg.tokenEnv) {

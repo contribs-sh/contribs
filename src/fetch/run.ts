@@ -2,16 +2,26 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { githubAdapter } from './adapters/github';
 import { forgejoAdapter } from './adapters/forgejo';
+import { gitlabAdapter } from './adapters/gitlab';
+import { bitbucketAdapter } from './adapters/bitbucket';
+import { azureAdapter } from './adapters/azure';
+import { jsonAdapter } from './adapters/json';
 import { localAdapter } from './adapters/local';
 import type { Adapter, SourceResult, SourceType } from './adapters/types';
 import type { MergedData } from '../data/types';
 import { merge } from './merge';
+import { applyWindow } from './window';
 import { loadSources } from './sources';
 
 const adapters: Record<SourceType, Adapter> = {
   github: githubAdapter,
+  gitlab: gitlabAdapter,
+  bitbucket: bitbucketAdapter,
+  azure: azureAdapter,
   forgejo: forgejoAdapter,
+  gitea: forgejoAdapter,
   local: localAdapter,
+  json: jsonAdapter,
 };
 
 /**
@@ -31,7 +41,7 @@ export async function runFetch(root: string, outDir = resolve(root, 'public/data
   for (const source of sources) {
     process.stdout.write(`Fetching ${source.label} (${source.id})… `);
     try {
-      const result = await adapters[source.type](source);
+      const result = applyWindow(await adapters[source.type](source), source.from, source.to);
       results.push(result);
       writeFileSync(resolve(outDir, 'sources', `${source.id}.json`), JSON.stringify(result, null, 2));
       const count = Object.values(result.days).reduce((a, b) => a + b, 0);

@@ -1,0 +1,39 @@
+name: Request a forge
+description: Ask for contribs.sh to support another code host (SourceHut, Radicle, Gerrit, Gitee, Pagure, ...)
+title: "Forge request: "
+labels: ["forge request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Built in today: GitHub (incl. Enterprise), GitLab (incl. self-managed), Bitbucket Cloud,
+        Azure DevOps, Forgejo/Gitea (incl. Codeberg). Any forge can already be added without code
+        through a `"type": "json"` source that returns `{ "YYYY-MM-DD": count }`.
+        Please don't paste tokens or private URLs here.
+  - type: input
+    id: forge
+    attributes:
+      label: Forge
+      placeholder: e.g. SourceHut
+    validations:
+      required: true
+  - type: dropdown
+    id: hosting
+    attributes:
+      label: Hosting
+      options:
+        - Public cloud (one shared instance)
+        - Self-hosted (each company runs its own)
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: api
+    attributes:
+      label: API docs
+      description: Link to the API that lists a user's activity, events, or commits, if you know it.
+  - type: textarea
+    id: why
+    attributes:
+      label: What would you use it for?
+      description: Roughly how many years of history live there, and is it personal or work?

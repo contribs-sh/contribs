@@ -1,10 +1,19 @@
 # contribs.sh
 
 **Every contribution, every forge, one heatmap.** Your GitHub graph only shows one account on one
-platform. contribs.sh merges every account you've used, counts commits from repos still on your disk,
-and exports the result as a banner for X, LinkedIn and more.
+platform. contribs.sh merges GitHub, GitLab, Bitbucket, Azure DevOps and Forgejo/Gitea accounts,
+counts commits from repos still on your disk, and exports the result as a banner for X, LinkedIn
+and more. No streaks: it's your history, not a productivity score.
 
 ![Example X banner rendered by contribs.sh](assets/hero-x.png)
+
+**No code needed:** open the site, click **Add account**, pick GitHub, GitLab, Bitbucket or
+Codeberg/Forgejo, paste a read-only token, and **Build my heatmap**. Everything runs in your browser
+and is stored there; there's no contribs.sh server and tokens are only kept for the session unless you
+tick "Remember on this device". Come back any time via **Sources and settings** to add accounts, mark
+lost history, import files, or download your setup to self-host.
+
+**Prefer the terminal:**
 
 ```bash
 npx contribs.sh init      # sources.json for your gh login
@@ -52,28 +61,43 @@ github.com account(s), or Personal Access Tokens for any source not in `gh` (see
 
 ## Configuring sources
 
-`sources.json` (gitignored) lists the accounts to merge. Each entry:
+`sources.json` (gitignored) lists the accounts to merge. Built-in forges:
+
+| `type`      | covers                                         | how it counts                                   | token (`tokenEnv`)                          |
+| ----------- | ---------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
+| `github`    | github.com, GitHub Enterprise Cloud and Server | GitHub's own contribution calendar              | none via `gh`, else PAT `repo` + `read:org` |
+| `gitlab`    | gitlab.com, self-managed GitLab                | your events (pushes count their commits)        | PAT `read_api`                              |
+| `bitbucket` | Bitbucket Cloud                                | your commits in repos you're a member of        | API token / app password, `read:repository` |
+| `azure`     | Azure DevOps (Azure Repos)                     | commits whose author email is in `emails`       | PAT, Code (Read)                            |
+| `forgejo`, `gitea` | Codeberg, Forgejo, Gitea                | the instance's heatmap                          | access token `read:user`                    |
+| `local`     | git repos on disk (`contribs.sh scan`)         | your commits by author email                    | none                                        |
+| `json`      | anything else                                  | a URL or file returning `{ "YYYY-MM-DD": n }`   | optional, sent as `Bearer`                  |
+
+Fields:
 
 | field      | meaning                                                                 |
 | ---------- | ----------------------------------------------------------------------- |
 | `id`       | unique slug (used for the per-source file name)                         |
 | `label`    | display name in the UI                                                  |
-| `type`     | `github` (github.com or Enterprise) or `forgejo` (Codeberg/Gitea)       |
-| `host`     | `github.com`, your Enterprise host, or `codeberg.org`                   |
-| `username` | the account's login                                                     |
-| `tokenEnv` | name of the env var holding the token — **omit** for a github.com account managed by the `gh` CLI |
+| `type`     | one of the types above                                                  |
+| `host`     | defaults to `github.com`, `gitlab.com`, `bitbucket.org`, `codeberg.org`; Azure uses `dev.azure.com/<org>` |
+| `username` | the account's login (Bitbucket: username or Atlassian email; not needed for Azure) |
+| `emails`   | author emails that count as you (`azure`, `local`; extra matches for `bitbucket`) |
+| `tokenEnv` | name of the env var holding the token; **omit** for a github.com account managed by the `gh` CLI |
+| `from`, `to` | optional `YYYY-MM-DD` window. Use it when a repo was mirrored between forges so the same work isn't counted twice (e.g. count GitLab only up to the day you moved to GitHub). |
+| `url`      | `json` only: `https://…` or a file path                                 |
 | `enabled`  | set `false` to keep an entry without fetching it                        |
 
-**Tokens.** github.com accounts in your `gh` keyring need no token — the fetch script pulls one via
-`gh auth token --user <username>`. Every other source reads its token from an env var named by
-`tokenEnv`, loaded from a gitignored `.env` (see `.env.example`):
+```json
+{ "id": "gl", "label": "GitLab", "type": "gitlab", "username": "you", "tokenEnv": "GITLAB_TOKEN", "to": "2021-06-30" }
+```
 
-- **GitHub Enterprise** — a PAT with `repo` + `read:org` on the Enterprise host.
-- **Codeberg / Forgejo** — an access token with `read:user`.
-- **A second github.com account** not in `gh` — a PAT with `repo` + `read:org`.
+**Tokens** are read from env vars named by `tokenEnv`, loaded from a gitignored `.env` (see
+`.env.example`). github.com accounts in your `gh` keyring need none. Sources whose token can't be
+resolved are skipped with a warning, so the dashboard always builds with whatever is available.
 
-Sources whose token can't be resolved are skipped with a warning, so the dashboard always builds
-with whatever credentials are available.
+**Another forge?** Use a `json` source today, or
+[request it](https://github.com/contribs-sh/contribs/issues/new?template=forge-request.yml).
 
 ## How it works
 
@@ -87,7 +111,7 @@ with whatever credentials are available.
   Components (`YearHeatmap`, `StatsPanel`, `YearSelector`, `SourceLegend`) read the data from context.
 
 A day is **known** when at least one source's coverage window includes it; unknown days carry count 0
-and are excluded from streak/average stats so lost history never distorts the numbers.
+and are excluded from the average so lost history never distorts the numbers.
 Coverage ends no later than the UTC fetch date. The full current-year grid remains visible:
 dates after today use a subdued outline and a "Future date" tooltip, contribute to no stats,
 and cannot receive lost-history annotations. Elapsed dates after the last fetch are "No data"
@@ -129,9 +153,10 @@ like zero-activity days. Edit the committed **`lost-ranges.json`**:
 
 **Toggle:** the legend has a **"Lost / incomplete"** checkbox that shows/hides the overlay live (your
 choice is remembered in the browser). While it's on, each lost day counts as **1** toward **Total
-contributions**, **Active days**, and **Avg / active day** — but **never** toward **Longest** or
-**Current streak**, which always reflect real GitHub activity only. Turning it off reverts both the
-heatmap and the stats to GitHub-only numbers.
+contributions**, **Active days**, and **Avg / active day**. Turning it off reverts both the heatmap
+and the stats to fetched activity only.
+
+contribs.sh deliberately shows no streaks: they reward never taking a day off.
 
 **To remove a range entirely:** set its `"enabled": false` (or delete the entry), or flip the
 top-level `"enabled": false`. Config changes apply on reload — no re-fetch.
@@ -219,7 +244,55 @@ contribs.sh init [--ci]      # sources.json for your gh login; --ci adds the Pag
 contribs.sh fetch            # same as npm run fetch
 contribs.sh banner [...]     # see above
 contribs.sh scan DIR...      # see "Recovering history from local repos"
+contribs.sh review           # Markdown work summary for a review or brag doc
+contribs.sh wrapped [YEAR]   # year-in-review card
 ```
+
+## Review summaries
+
+`contribs.sh review` prints a Markdown summary for a performance review or brag doc: totals, busiest
+day and month-by-month activity for a window, plus the titles of pull/merge requests you merged on
+GitHub and GitLab, grouped by repo, with blank Impact / Collaboration / Growth prompts to fill in.
+
+```bash
+contribs.sh review --from 2026-05-01 --to 2026-10-31 --out review.md
+contribs.sh review --no-prs        # counts only
+```
+
+It runs entirely on your machine and sends nothing anywhere. PR titles can be confidential, so check
+the output before sharing it.
+
+## Wrapped
+
+`contribs.sh wrapped 2026` renders a 1080×1350 year-in-review card (contributions, active days,
+average per active day, busiest day, and the year's grid) across every source. The dashboard's
+Export panel has the same preset.
+
+## 3D view
+
+The dashboard's **3D view** button renders the selected year as an interactive skyline: drag to
+orbit, scroll to zoom. Columns rise week by week once when it opens; with reduced motion enabled
+it appears finished and doesn't auto-rotate. three.js loads only when you open it.
+
+## In-browser setup
+
+When the site has no built `data/contributions.json` (the hosted contribs.sh, or any static deploy
+without one), it opens a setup screen instead of the dashboard:
+
+- **Accounts:** add GitHub (incl. Enterprise), GitLab, Bitbucket Cloud or Codeberg/Forgejo/Gitea.
+  **Test connection** fetches once and shows the total before you save. The browser calls each
+  forge's API directly (they allow cross-site requests); Azure DevOps doesn't, so it's CLI-only, as are
+  self-hosted forges behind a VPN.
+- **Import data file:** a `{ "YYYY-MM-DD": count }` file, or a per-source file from the CLI
+  (`public/data/sources/*.json`), e.g. history recovered with `contribs.sh scan`.
+- **History that isn't on any forge:** the same lost ranges as `lost-ranges.json`, as a form.
+- **Your setup file:** download or load your sources and lost history (also accepts a CLI
+  `sources.json` or `lost-ranges.json`). Tokens are never included.
+
+Storage is `localStorage` in that browser only. Tokens default to session memory; ticking "Remember
+on this device" keeps them in `localStorage`, readable by anything running on the page, so the site
+loads no third-party scripts. A self-hosted build with a `data/contributions.json` skips setup
+entirely and shows that data, as before.
 
 ## Self-hosting with GitHub Actions
 

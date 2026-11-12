@@ -20,5 +20,5 @@
     "resolveJsonModule": true
   },
   "include": ["src"],
-  "exclude": ["src/fetch", "src/cli"]
+  "exclude": ["src/fetch/fetch.ts", "src/fetch/run.ts", "src/fetch/sources.ts", "src/fetch/adapters/local.ts", "src/fetch/adapters/json.ts", "src/cli"]
 }

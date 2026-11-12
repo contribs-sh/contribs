@@ -1,4 +1,4 @@
-export type SourceType = 'github' | 'forgejo' | 'local';
+export type SourceType = 'github' | 'gitlab' | 'bitbucket' | 'azure' | 'forgejo' | 'gitea' | 'local' | 'json';
 
 /** Normalized output every source adapter must produce. */
 export interface SourceResult {
@@ -22,13 +22,15 @@ export interface ResolvedSource {
   username: string;
   /** Auth token (github/forgejo only). */
   token: string;
+  /** Data URL or file path (json only). */
+  url?: string;
   /** Directories to scan for git repos (local only). */
   paths?: string[];
-  /** Author emails that count as you (local only). */
+  /** Author emails that count as you (local, azure, bitbucket). */
   emails?: string[];
   /** How many directory levels to descend looking for repos (local only, default 4). */
   depth?: number;
-  /** Inclusive ISO window to keep (local only). */
+  /** Inclusive ISO window to keep. Use it to avoid double-counting mirrored repos. */
   from?: string;
   to?: string;
 }

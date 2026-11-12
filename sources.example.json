@@ -8,7 +8,6 @@
       "username": "your-github-username",
       "enabled": true
     },
-
     {
       "id": "gh-second",
       "label": "GitHub (second account)",
@@ -37,11 +36,47 @@
       "enabled": false
     },
     {
+      "id": "gitlab-main",
+      "label": "GitLab",
+      "type": "gitlab",
+      "host": "gitlab.com",
+      "username": "YOUR_GITLAB_USERNAME",
+      "tokenEnv": "GITLAB_TOKEN",
+      "enabled": false
+    },
+    {
+      "id": "bitbucket-old-job",
+      "label": "Bitbucket (old job)",
+      "type": "bitbucket",
+      "username": "YOUR_BITBUCKET_USERNAME",
+      "emails": [
+        "you@old-employer.example"
+      ],
+      "tokenEnv": "BITBUCKET_TOKEN",
+      "to": "2019-12-31",
+      "enabled": false
+    },
+    {
+      "id": "azure-work",
+      "label": "Azure DevOps (work)",
+      "type": "azure",
+      "host": "dev.azure.com/YOUR_ORG",
+      "emails": [
+        "you@company.example"
+      ],
+      "tokenEnv": "AZURE_DEVOPS_TOKEN",
+      "enabled": false
+    },
+    {
       "id": "local-history",
       "label": "Recovered (local git)",
       "type": "local",
-      "paths": ["~/code/old-work"],
-      "emails": ["you@old-employer.example"],
+      "paths": [
+        "~/code/old-work"
+      ],
+      "emails": [
+        "you@old-employer.example"
+      ],
       "from": "2015-01-01",
       "to": "2019-12-31",
       "enabled": false

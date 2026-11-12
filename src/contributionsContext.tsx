@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { filteredLostFor, type LostHit } from './lostRanges';
+import { lostConfig as fileLostConfig } from './lostRanges';
+import { compileLost, filterLost, legendOf, type LostConfig, type LostHit } from './data/lost';
 import type { SourceResult } from './fetch/adapters/types';
 import type { MergedData } from './data/types';
 import type { Scope } from './data/stats';
@@ -26,6 +27,8 @@ interface ContributionsContextValue {
   enabledServices: Record<string, boolean>;
   toggleService: (service: string) => void;
   lostFor: (date: string) => LostHit | null;
+  /** Active lost ranges, one legend swatch each. */
+  lostLegend: Array<{ id: string; label: string; color: string }>;
   today: string;
 }
 
@@ -33,9 +36,14 @@ const ContributionsContext = createContext<ContributionsContextValue | null>(nul
 
 export function ContributionsProvider({
   data,
+  details,
+  lost = fileLostConfig,
   children,
 }: {
   data: MergedData;
+  /** Per-source data already in memory (browser setup). Omit to load `data/sources/*.json`. */
+  details?: Record<string, SourceResult>;
+  lost?: LostConfig;
   children: ReactNode;
 }) {
   const [scope, setScope] = useState<Scope>('all');
@@ -59,6 +67,10 @@ export function ContributionsProvider({
   const [sourceDetails, setSourceDetails] = useState<Record<string, SourceResult | null>>({});
   useEffect(() => {
     let cancelled = false;
+    if (details) {
+      setSourceDetails(details);
+      return;
+    }
     setSourceDetails({});
     for (const source of data.sources) {
       fetch(`${import.meta.env.BASE_URL}data/sources/${encodeURIComponent(source.id)}.json`)
@@ -74,12 +86,13 @@ export function ContributionsProvider({
         });
     }
     return () => { cancelled = true; };
-  }, [data]);
+  }, [data, details]);
   const [showLost, setShowLostState] = useState<boolean>(initialShowLost);
   const lostFor = useMemo(() => {
-    const lookup = filteredLostFor(enabledServices);
+    const lookup = compileLost(filterLost(lost, enabledServices));
     return (date: string) => showLost && date <= today ? lookup(date) : null;
-  }, [showLost, enabledServices, today]);
+  }, [showLost, enabledServices, today, lost]);
+  const lostLegend = useMemo(() => legendOf(lost), [lost]);
   const filteredData = useMemo(() => {
     const fetchedThrough = data.generatedAt.slice(0, 10);
     const normalized = { ...data, sources: data.sources.map((source) => ({
@@ -106,7 +119,7 @@ export function ContributionsProvider({
   };
 
   return (
-    <ContributionsContext.Provider value={{ data: filteredData, sourceDetails, scope, setScope, showLost, setShowLost, enabledServices, toggleService, lostFor, today }}>
+    <ContributionsContext.Provider value={{ data: filteredData, sourceDetails, scope, setScope, showLost, setShowLost, enabledServices, toggleService, lostFor, lostLegend, today }}>
       {children}
     </ContributionsContext.Provider>
   );

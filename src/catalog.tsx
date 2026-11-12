@@ -9,6 +9,7 @@ import { YearSelector } from './components/YearSelector';
 import { StatsPanel } from './components/StatsPanel';
 import { Heatmaps } from './components/Heatmaps';
 import { ExportPanel } from './components/ExportPanel';
+import { Skyline } from './components/Skyline';
 
 /**
  * The catalog declares the components the JSON document (dashboard.json) may use.
@@ -37,6 +38,10 @@ export const catalog = defineCatalog(schema, {
       props: z.object({}),
       description: 'Contribution heatmap grid(s) for the selected scope',
     },
+    Skyline: {
+      props: z.object({}),
+      description: 'Interactive 3D view of the selected year',
+    },
     ExportPanel: {
       props: z.object({}),
       description: 'Export the heatmap as a banner, card, Wrapped story, or poster image',
@@ -53,6 +58,7 @@ export const { registry } = defineRegistry(catalog, {
     StatsPanel: () => <StatsPanel />,
     Heatmaps: () => <Heatmaps />,
     ExportPanel: () => <ExportPanel />,
+    Skyline: () => <Skyline />,
   },
   actions: {},
 });

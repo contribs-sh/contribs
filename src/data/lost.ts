@@ -86,3 +86,17 @@ export function compileLost(config: LostConfig): (dateISO: string) => LostHit | 
     return null;
   };
 }
+
+/** Drop ranges whose legend button is switched off. */
+export function filterLost(config: LostConfig, enabled: Record<string, boolean>): LostConfig {
+  return { ...config, ranges: config.ranges.filter((r) => enabled[r.label ?? r.id] !== false) };
+}
+
+/** Active ranges, one legend swatch each. */
+export function legendOf(config: LostConfig): Array<{ id: string; label: string; color: string }> {
+  return config.enabled
+    ? config.ranges
+        .filter((r) => r.enabled !== false)
+        .map((r) => ({ id: r.id, label: r.label ?? r.id, color: r.color ?? DEFAULT_LOST_COLOR }))
+    : [];
+}

@@ -1,4 +1,5 @@
 import type { Adapter, ResolvedSource, SourceResult } from './types';
+import { userAgent } from './http';
 
 /**
  * GitHub adapter — works for github.com and GitHub Enterprise (any host).
@@ -53,7 +54,7 @@ async function graphql<T>(
     headers: {
       Authorization: `bearer ${source.token}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'contribs-sh',
+      ...userAgent(),
     },
     body: JSON.stringify({ query, variables }),
   });
