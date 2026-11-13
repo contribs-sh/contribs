@@ -10,6 +10,8 @@ import { runFetch } from '../fetch/run';
 import { workflowYaml } from './workflow';
 import { collectShipped, defaultWindow, reviewMarkdown } from './review';
 import { anonymizeSite } from './publicData';
+import { writeFeed } from './feed';
+import { feedWorkflowYaml } from './workflow';
 
 const HELP = `contribs.sh — every contribution, every forge, one heatmap.
 
@@ -21,6 +23,8 @@ Usage:
   contribs.sh review [options]       Markdown work summary for a review / brag doc
   contribs.sh wrapped [YEAR]         year-in-review card (shortcut for banner --preset wrapped)
   contribs.sh public [DIR]           make a built site safe to publish: anonymize labels, drop per-account data (default DIR: dist)
+  contribs.sh feed [--out DIR]       your own data feed: index.json, index.md, per-year .md, graph.svg (default DIR: feed)
+  contribs.sh init --feed            add a GitHub Actions workflow that publishes your feed to GitHub Pages daily
 
 banner options:
   --preset ID      ${PRESET_IDS.join(' | ')} | all   (default: x)
@@ -80,7 +84,8 @@ function ghLogin(): string | null {
 }
 
 async function init(args: string[]) {
-  const { values } = parseArgs({ args, options: { ci: { type: 'boolean' } } });
+  const { values } = parseArgs({ args, options: { ci: { type: 'boolean' }, feed: { type: 'boolean' } } });
+  if (values.feed) values.ci = true;
   const sourcesPath = resolve(root, 'sources.json');
   if (existsSync(sourcesPath)) {
     console.log('sources.json already exists — leaving it alone.');
@@ -103,12 +108,12 @@ async function init(args: string[]) {
     console.log(`Wrote sources.json${login ? ` for ${login}` : ' — edit "username"'}.`);
   }
   if (values.ci) {
-    const wf = resolve(root, '.github/workflows/contribs.yml');
+    const wf = resolve(root, `.github/workflows/${values.feed ? 'contribs-feed' : 'contribs'}.yml`);
     if (existsSync(wf)) {
-      console.log('.github/workflows/contribs.yml already exists — leaving it alone.');
+      console.log(`${wf} already exists — leaving it alone.`);
     } else {
       mkdirSync(dirname(wf), { recursive: true });
-      writeFileSync(wf, workflowYaml());
+      writeFileSync(wf, values.feed ? feedWorkflowYaml() : workflowYaml());
       console.log('Wrote .github/workflows/contribs.yml. Add a GH_MAIN_TOKEN repo secret (classic PAT: read:user, repo, read:org)');
       console.log('and a CONTRIBS_SOURCES secret holding your sources.json, then enable GitHub Pages → "GitHub Actions".');
     }
@@ -277,7 +282,24 @@ async function publicCmd(args: string[]) {
   console.log(`Anonymized ${sources} source label(s) and removed per-account data in ${dir}.`);
 }
 
-const commands: Record<string, (args: string[]) => Promise<void>> = { init, fetch: fetchCmd, banner, scan, review, wrapped, public: publicCmd };
+async function feed(args: string[]) {
+  const { values } = parseArgs({
+    args,
+    options: {
+      out: { type: 'string', default: 'feed' },
+      data: { type: 'string' },
+      title: { type: 'string' },
+      url: { type: 'string' },
+      labels: { type: 'boolean' },
+    },
+  });
+  const data = await loadData(values.data);
+  const out = resolve(root, values.out!);
+  const files = writeFeed(data, out, { title: values.title, url: values.url, labels: values.labels });
+  console.log(`Wrote ${files.length} files to ${out}: ${files.join(', ')}`);
+}
+
+const commands: Record<string, (args: string[]) => Promise<void>> = { init, fetch: fetchCmd, banner, scan, review, wrapped, public: publicCmd, feed };
 
 const [command, ...rest] = process.argv.slice(2);
 if (!command || command === '-h' || command === '--help' || command === 'help') {

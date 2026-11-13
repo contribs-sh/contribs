@@ -10,7 +10,8 @@
     "cli": "tsx src/cli/index.ts",
     "banner": "tsx src/cli/index.ts banner",
     "demo": "tsx scripts/demo.ts",
-    "test": "tsx scripts/test-adapters.ts"
+    "test": "tsx scripts/test-adapters.ts",
+    "build:site": "tsc -p tsconfig.json && vite build && node -e \"require('fs').rmSync('dist/data',{recursive:true,force:true})\""
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",

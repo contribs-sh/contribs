@@ -87,3 +87,78 @@ jobs:
         uses: actions/deploy-pages@v4
 `;
 }
+
+/** GitHub Actions workflow for a personal feed repo: daily fetch → feed → GitHub Pages. */
+export function feedWorkflowYaml(): string {
+  return `# contribs.sh feed — publish your own contribution data feed to GitHub Pages daily.
+#
+# Published: index.json, index.md, <year>.md, graph.svg. Daily counts only: no repo names,
+# titles, hosts or usernames, and account labels become "Source 1, 2, ..." unless you add --labels.
+#
+# Setup (repo → Settings):
+#   1. Secrets and variables → Actions → New repository secret:
+#        CONTRIBS_SOURCES  contents of your sources.json (every source needs "tokenEnv")
+#        GH_MAIN_TOKEN     token for that source (one secret per tokenEnv)
+#   2. Pages → Build and deployment → Source: GitHub Actions
+name: contribs-feed
+
+on:
+  schedule:
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      configured: \${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        env:
+          CONTRIBS_SOURCES: \${{ secrets.CONTRIBS_SOURCES }}
+        run: |
+          if [ -n "$CONTRIBS_SOURCES" ]; then echo configured=true >> "$GITHUB_OUTPUT"; else
+            echo "::notice::CONTRIBS_SOURCES secret not set — skipping."
+            echo configured=false >> "$GITHUB_OUTPUT"; fi
+      - if: steps.check.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - if: steps.check.outputs.configured == 'true'
+        name: Build feed
+        env:
+          CONTRIBS_SOURCES: \${{ secrets.CONTRIBS_SOURCES }}
+          GH_MAIN_TOKEN: \${{ secrets.GH_MAIN_TOKEN }}
+          # Add one line per extra "tokenEnv" in your sources.json.
+        run: |
+          mkdir work && cd work
+          printf '%s' "$CONTRIBS_SOURCES" > sources.json
+          npx -y contribs.sh@latest fetch --out data
+          npx -y contribs.sh@latest feed --data data/contributions.json --out ../feed \\
+            --url "https://\${{ github.repository_owner }}.github.io/\${{ github.event.repository.name }}/"
+      - if: steps.check.outputs.configured == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: feed
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.configured == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: \${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+`;
+}

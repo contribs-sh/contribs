@@ -245,6 +245,7 @@ contribs.sh fetch            # same as npm run fetch
 contribs.sh banner [...]     # see above
 contribs.sh scan DIR...      # see "Recovering history from local repos"
 contribs.sh public [DIR]     # make a built site safe to publish (anonymized labels)
+contribs.sh feed [--out DIR] # your own data feed: index.json, index.md, per-year .md, graph.svg
 contribs.sh review           # Markdown work summary for a review or brag doc
 contribs.sh wrapped [YEAR]   # year-in-review card
 ```
@@ -317,6 +318,30 @@ names or PR titles.
 - **Check your employer's policy** before using a work token with any third-party tool. Some don't
   allow it, even read-only.
 
+## Your own data feed
+
+`contribs.sh feed` writes a small, agent-readable site about your history, in the spirit of public
+data pages like opencode.ai/data, but for one developer:
+
+| file | what |
+| --- | --- |
+| `index.json` | daily counts per year, active days, busiest day, monthly totals |
+| `index.md` | summary table, sources, methodology, citation line |
+| `YYYY.md` | one page per year |
+| `graph.svg` | merged heatmap for a README or site |
+
+Only counts are published: no repository names, titles, hosts or usernames, and account labels
+become "Source 1, 2, …" unless you pass `--labels`.
+
+To publish it automatically, create an empty repo, then:
+
+```bash
+npx contribs.sh init --feed     # writes sources.json and .github/workflows/contribs-feed.yml
+```
+
+Add `CONTRIBS_SOURCES` (your `sources.json`, every source with a `tokenEnv`) and one secret per token,
+set Pages to "GitHub Actions", and it rebuilds daily at `https://<you>.github.io/<repo>/`.
+
 ## Self-hosting with GitHub Actions
 
 `.github/workflows/contribs.yml` refreshes the data daily, builds the dashboard, renders every banner
@@ -338,6 +363,10 @@ a README or site. Add extra token secrets to the `env:` block of the "Fetch, bui
 
 The app is a static site — the only runtime input is `public/data/contributions.json`, produced by
 `npm run fetch`. To publish:
+
+**The hosted contribs.sh** is the same app built without any data file, so every visitor gets the
+in-browser setup: `npm run build:site` (removes `dist/data`), output `dist/`, with security headers
+from `public/_headers`. Cloudflare Pages settings: build command `npm run build:site`, output `dist`.
 
 ```bash
 npm run fetch     # refresh your data (needs gh/tokens; do this wherever you build)
