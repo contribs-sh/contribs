@@ -35,7 +35,7 @@ banner options:
 review options:
   --from DATE      start of the window (default: 6 months ago)
   --to DATE        end of the window (default: today)
-  --no-prs         counts only; skip pulling merged PR/MR titles
+  --no-prs         counts only; skip merged PR/MR lookups (private PRs are always counts only)
   --out PATH       write to a file instead of stdout
 
 scan options:

@@ -251,16 +251,19 @@ contribs.sh wrapped [YEAR]   # year-in-review card
 ## Review summaries
 
 `contribs.sh review` prints a Markdown summary for a performance review or brag doc: totals, busiest
-day and month-by-month activity for a window, plus the titles of pull/merge requests you merged on
-GitHub and GitLab, grouped by repo, with blank Impact / Collaboration / Growth prompts to fill in.
+day and month-by-month activity for a window, plus the pull/merge requests you merged on GitHub and
+GitLab, with blank Impact / Collaboration / Growth prompts to fill in.
 
 ```bash
 contribs.sh review --from 2026-05-01 --to 2026-10-31 --out review.md
 contribs.sh review --no-prs        # counts only
 ```
 
-It runs entirely on your machine and sends nothing anywhere. PR titles can be confidential, so check
-the output before sharing it.
+**Only public work is named.** A PR's repo, title and link appear only when the repo is public on
+github.com or gitlab.com. PRs in private or internal repos, and anything on GitHub Enterprise or a
+self-hosted forge, are reduced to a count per month, so employer repo names and PR titles never end
+up in the output. Account labels are left out too, since they can name an employer. It runs entirely
+on your machine and sends nothing anywhere.
 
 ## Wrapped
 

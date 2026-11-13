@@ -10,6 +10,8 @@ import { gitlabAdapter } from '../src/fetch/adapters/gitlab';
 import { bitbucketAdapter } from '../src/fetch/adapters/bitbucket';
 import { azureAdapter } from '../src/fetch/adapters/azure';
 import { jsonAdapter } from '../src/fetch/adapters/json';
+import { reviewMarkdown, type ReviewItem } from '../src/cli/review';
+import { merge } from '../src/fetch/merge';
 import type { ResolvedSource } from '../src/fetch/adapters/types';
 
 type Route = [RegExp, unknown];
@@ -77,6 +79,19 @@ const tests: Array<[string, () => Promise<void>]> = [
     writeFileSync(file, JSON.stringify({ '2026-01-02': 3, '2026-01-03': 0, nope: 4, '2026-01-04': 'x' }));
     const r = await jsonAdapter(base({ type: 'json', url: file }));
     assert.deepEqual(r.days, { '2026-01-02': 3 });
+  }],
+  ['review names public repos only and reduces private ones to counts', async () => {
+    const data = merge([{ id: 'a', label: 'Acme Corp work', type: 'github', days: { '2026-03-02': 4 }, coverage: { from: '2026-01-01', to: '2026-03-31' } }], '2026-03-31T00:00:00Z');
+    const shipped: ReviewItem[] = [
+      { repo: 'me/open-thing', title: 'Add dark mode', url: 'https://github.com/me/open-thing/pull/1', merged: '2026-03-02', public: true },
+      { repo: '', title: '', url: '', merged: '2026-03-03', public: false },
+      { repo: '', title: '', url: '', merged: '2026-02-10', public: false },
+    ];
+    const md = reviewMarkdown(data, '2026-01-01', '2026-03-31', shipped);
+    assert.match(md, /2 in private or work repos/);
+    assert.match(md, /2026-02: 1 · 2026-03: 1/);
+    assert.match(md, /### me\/open-thing \(1\)/);
+    assert.doesNotMatch(md, /Acme/, 'source labels can name an employer and must not appear');
   }],
 ];
 
