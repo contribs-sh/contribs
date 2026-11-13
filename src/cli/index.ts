@@ -9,6 +9,7 @@ import { findRepos, localAdapter } from '../fetch/adapters/local';
 import { runFetch } from '../fetch/run';
 import { workflowYaml } from './workflow';
 import { collectShipped, defaultWindow, reviewMarkdown } from './review';
+import { anonymizeSite } from './publicData';
 
 const HELP = `contribs.sh — every contribution, every forge, one heatmap.
 
@@ -19,6 +20,7 @@ Usage:
   contribs.sh scan DIR... [options]  recover history from local git repos on disk
   contribs.sh review [options]       Markdown work summary for a review / brag doc
   contribs.sh wrapped [YEAR]         year-in-review card (shortcut for banner --preset wrapped)
+  contribs.sh public [DIR]           make a built site safe to publish: anonymize labels, drop per-account data (default DIR: dist)
 
 banner options:
   --preset ID      ${PRESET_IDS.join(' | ')} | all   (default: x)
@@ -269,7 +271,13 @@ async function wrapped(args: string[]) {
   await banner(['--preset', 'wrapped', '--range', year, '--out', `contribs-wrapped-${year}.png`, ...args]);
 }
 
-const commands: Record<string, (args: string[]) => Promise<void>> = { init, fetch: fetchCmd, banner, scan, review, wrapped };
+async function publicCmd(args: string[]) {
+  const dir = resolve(root, args[0] ?? 'dist');
+  const { sources } = anonymizeSite(dir);
+  console.log(`Anonymized ${sources} source label(s) and removed per-account data in ${dir}.`);
+}
+
+const commands: Record<string, (args: string[]) => Promise<void>> = { init, fetch: fetchCmd, banner, scan, review, wrapped, public: publicCmd };
 
 const [command, ...rest] = process.argv.slice(2);
 if (!command || command === '-h' || command === '--help' || command === 'help') {

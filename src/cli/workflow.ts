@@ -9,7 +9,8 @@ export function workflowYaml(): string {
 #        CONTRIBS_LOST_RANGES  optional: contents of your lost-ranges.json
 #   2. Pages → Build and deployment → Source: GitHub Actions
 #
-# Published files: index.html (dashboard), banners/<preset>.png|svg, data/contributions.json
+# Published files: index.html (dashboard), banners/<preset>.png|svg, data/contributions.json (merged daily
+# counts with anonymized labels). Your sources.json, tokens and account names are never published.
 name: contribs
 
 on:
@@ -66,6 +67,9 @@ jobs:
           npm run fetch
           npm run build -- --base ./
           npm run banner -- --preset all --out dist/banners
+          # Public site: account labels become "Source 1, 2, ..." and per-account files are removed.
+          # Delete this line only if you're fine publishing your labels and per-account counts.
+          npm run cli -- public dist
       - if: steps.check.outputs.configured == 'true'
         uses: actions/upload-pages-artifact@v3
         with:

@@ -244,6 +244,7 @@ contribs.sh init [--ci]      # sources.json for your gh login; --ci adds the Pag
 contribs.sh fetch            # same as npm run fetch
 contribs.sh banner [...]     # see above
 contribs.sh scan DIR...      # see "Recovering history from local repos"
+contribs.sh public [DIR]     # make a built site safe to publish (anonymized labels)
 contribs.sh review           # Markdown work summary for a review or brag doc
 contribs.sh wrapped [YEAR]   # year-in-review card
 ```
@@ -297,6 +298,25 @@ on this device" keeps them in `localStorage`, readable by anything running on th
 loads no third-party scripts. A self-hosted build with a `data/contributions.json` skips setup
 entirely and shows that data, as before.
 
+## Using it with a work account
+
+contribs.sh keeps **one number per day** for each account. Never your code, commit messages, repo
+names or PR titles.
+
+- **Tokens stay with you.** In the browser, the token goes straight to your forge and is forgotten
+  when you close the tab (unless you tick "Remember on this device"). With the CLI, it stays on
+  your machine. contribs.sh has no server.
+- **Use a read-only token** with the smallest scope listed for your forge.
+- **`review` keeps work private.** PRs in private, internal or self-hosted repos appear only as
+  monthly counts, without names, titles or links.
+- **Self-hosting publishes counts, not names.** The GitHub Pages workflow runs `contribs.sh public`,
+  which renames accounts to "Source 1, 2, …" and drops per-account files before deploying. Lost-range
+  ids never reach the page; their labels and notes do, so keep those generic.
+- **Bitbucket** has no "my commits only" API, so contribs.sh reads all commits in your repos to find
+  yours. Other people's commits are discarded immediately and never saved.
+- **Check your employer's policy** before using a work token with any third-party tool. Some don't
+  allow it, even read-only.
+
 ## Self-hosting with GitHub Actions
 
 `.github/workflows/contribs.yml` refreshes the data daily, builds the dashboard, renders every banner
@@ -307,6 +327,9 @@ preset, and publishes to GitHub Pages. It does nothing until configured, so fork
    `read:user`, `repo`, `read:org`), and optionally `CONTRIBS_LOST_RANGES`.
 2. Settings → Pages → Source: **GitHub Actions**.
 3. Run the workflow once from the Actions tab.
+
+Before deploying, the workflow runs `contribs.sh public dist`: account labels become "Source 1, 2, …"
+and per-account data files are removed, so the public site shows merged daily counts only.
 
 Your banners are then at `https://<you>.github.io/<repo>/banners/x.png` (and `.svg`), ready to embed in
 a README or site. Add extra token secrets to the `env:` block of the "Fetch, build, render banners" step.

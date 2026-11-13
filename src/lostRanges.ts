@@ -8,6 +8,9 @@ const configModules = import.meta.glob<{ default: LostConfig }>('../lost-ranges*
 const pick = (suffix: string) =>
   Object.entries(configModules).find(([path]) => path.endsWith(suffix))?.[1]?.default;
 
-/** Lost ranges from the repo's `lost-ranges.json` (self-hosted builds). */
+/**
+ * Lost ranges from the repo's `lost-ranges.json` (self-hosted builds). Range ids are replaced at
+ * build time by the plugin in `vite.config.ts`, since they often name an employer.
+ */
 export const lostConfig: LostConfig =
   pick('/lost-ranges.json') ?? pick('/lost-ranges.example.json') ?? EMPTY_LOST_CONFIG;
